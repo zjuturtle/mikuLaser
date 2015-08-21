@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <IncludePath>$(Solutiondir)opengl_lib\glew_1.13.0\include;$(Solutiondir)opengl_lib\glfw_3.1.1\include;$(Solutiondir)opengl_lib\glm_0.9.7.0\include;$(Solutiondir)opengl_lib\SOIL\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(Solutiondir)opengl_lib\glew_1.13.0;$(Solutiondir)opengl_lib\glfw_3.1.1;$(Solutiondir)opengl_lib\SOIL;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>opengl32.lib;glew_x64sd.lib;glfw3_x64d.lib;SOIL_x64d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>
