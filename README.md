@@ -19,6 +19,7 @@ Documents
 
 > **Mouse:**
 
-> - Click and hold the left mouse button to change YAW/PITCH
-> - Click right mouse button to reset YAW/PITCH
-> - **Note:ROLL is locked, you cannot change it when program is running**
+> - Click and hold the left mouse button to change YAW/PITCH.
+> - Click right mouse button to reset YAW/PITCH.
+> - Scroll to zoom in or out.
+> - **Note:ROLL is locked, you cannot change it when program is running.**
