@@ -14,7 +14,7 @@ Documents
 > **Keyboard:**
 
 > - Use key up/down/left/right to control camera move forward/backward/leftward/rightward.
-> - Use key w/s to control camera move up/down.
+> - Use key w/s to control camera move upward/downward.
 > - Use key "Esc" to exit.
 
 > **Mouse:**
