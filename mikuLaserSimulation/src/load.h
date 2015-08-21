@@ -1,5 +1,7 @@
 #pragma once
+#include <vector>
+#include <string>
 //load function
-void loadGroundMesh(vector<Vertex> &vertices, vector<GLuint> &indices, vector<Texture> &textures);
+void loadGroundMesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, std::vector<Texture> &textures);
 void loadEnvironment(GLuint &vertexBufferObject, GLuint &vertexArrayObject, GLuint &elementBufferObject);
-GLint loadTextureFromFile(const char* path, string directory);
+GLint loadTextureFromFile(const char* path, std::string directory);

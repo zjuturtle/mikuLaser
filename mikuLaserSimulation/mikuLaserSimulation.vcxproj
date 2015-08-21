@@ -154,6 +154,7 @@
     <ClInclude Include="src\Laser.h" />
     <ClInclude Include="src\load.h" />
     <ClInclude Include="src\Mesh.h" />
+    <ClInclude Include="src\PointCloud.h" />
     <ClInclude Include="src\Shader.h" />
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +167,8 @@
     <None Include="shader\environment.vertexShader" />
     <None Include="shader\laser.fragmentShader" />
     <None Include="shader\laser.vertexShader" />
+    <None Include="shader\pointCloud.fragmentShader" />
+    <None Include="shader\pointCloud.vertexShader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resource\ground_texture.jpg" />

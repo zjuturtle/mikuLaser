@@ -33,6 +33,9 @@
     <ClInclude Include="src\Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\PointCloud.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\load.cpp">
@@ -56,6 +59,12 @@
       <Filter>源文件\shader</Filter>
     </None>
     <None Include="shader\laser.vertexShader">
+      <Filter>源文件\shader</Filter>
+    </None>
+    <None Include="shader\pointCloud.fragmentShader">
+      <Filter>源文件\shader</Filter>
+    </None>
+    <None Include="shader\pointCloud.vertexShader">
       <Filter>源文件\shader</Filter>
     </None>
   </ItemGroup>

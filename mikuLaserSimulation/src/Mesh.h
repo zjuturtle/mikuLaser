@@ -5,7 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
-using namespace std;
+
 // GL Includes
 #include <GL/glew.h> // Contains all the necessery OpenGL includes
 #include <glm/glm.hpp>
@@ -26,19 +26,19 @@ struct Vertex {
 struct Texture {
 	GLuint id;
 	TextureType type;
-	string path;
+	std::string path;
 };
 
 class Mesh {
 public:
 	/*  Mesh Data  */
-	vector<Vertex> vertices;
-	vector<GLuint> indices;
-	vector<Texture> textures;
+	std::vector<Vertex> vertices;
+	std::vector<GLuint> indices;
+	std::vector<Texture> textures;
 
 	/*  Functions  */
 	// Constructor
-	Mesh(vector<Vertex> vertices, vector<GLuint> indices, vector<Texture> textures)
+	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures)
 	{
 		this->vertices = vertices;
 		this->indices = indices;
@@ -58,9 +58,9 @@ public:
 		{
 			glActiveTexture(GL_TEXTURE0 + i); // Active proper texture unit before binding
 											  // Retrieve texture number (the N in diffuse_textureN)
-			stringstream ss;
-			string number;
-			string name;
+			std::stringstream ss;
+			std::string number;
+			std::string name;
 			if (textures[i].type == TextureType::Diffuse) {
 				name = "texture_diffuse";
 				ss << diffuseNr++; // Transfer GLuint to stream

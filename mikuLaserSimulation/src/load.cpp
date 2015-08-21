@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-
+#include <vector>
 
 // GLEW
 #define GLEW_STATIC
@@ -23,7 +23,7 @@
 #include "Mesh.h"
 #include "load.h"
 
-void loadGroundMesh(vector<Vertex> &vertices, vector<GLuint> &indices, vector<Texture> &textures) {
+void loadGroundMesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, std::vector<Texture> &textures) {
 	Vertex leftUp, rightUp, leftDown, rightDown;
 
 	leftUp.Position = glm::vec3(-1.0f, 1.0f, 0.0f);
@@ -61,10 +61,10 @@ void loadGroundMesh(vector<Vertex> &vertices, vector<GLuint> &indices, vector<Te
 	textures.push_back(t);
 }
 
-GLint loadTextureFromFile(const char* path, string directory)
+GLint loadTextureFromFile(const char* path, std::string directory)
 {
 	//Generate texture ID and load texture data 
-	string filename = string(path);
+	std::string filename = std::string(path);
 	filename = directory + filename;
 	GLuint textureID;
 	glGenTextures(1, &textureID);
