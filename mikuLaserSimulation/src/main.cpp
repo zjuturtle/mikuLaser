@@ -70,31 +70,28 @@ vector<glm::vec3> laserBarrierTriangles;
 int main()
 {
 
-	//初始化激光模拟窗口
+	//Initialize laser simulation window
 	GLFWwindow* viewWindow=initViewWindow();
 
-	//编译链接shader程序
+	//compile and link shader
 	Shader laserShader(laserVertexShaderSourceFileName,laserFragmentShaderSourceFileName );
 	Shader environmentShader(environmentVertexShaderSourceFileName,environmentFragmentShaderSourceFileName);
 
-	//初始化camera
-
-	//载入环境模型
+	//load environment model
 	vector<Vertex> vertices;
 	vector<Texture> textures;
 	vector<GLuint> indices;
 	loadGroundMesh(vertices,indices,textures);
 	Mesh environmentMesh(vertices,indices,textures);
-	laserBarrierMesh.push_back(environmentMesh);//将环境载入内存以供激光计算
+	laserBarrierMesh.push_back(environmentMesh);//load environment into memory for laser compute
 	fill_barrier_tank();
 
-	//计算激光
+	//caculate laser
 	vector<glm::vec3> originPoints;
 	vector<glm::vec3> direction;
 	originPoints.push_back(glm::vec3(0.f,0.0f,5.0f));
 	direction.push_back(glm::vec3(0.f,0.f,-1.f));
-	//originPoints.push_back(glm::vec3(.7f, 0.2f, 0.5f));
-	//direction.push_back(glm::vec3(1.f, -1.f, -1.f));
+
 	Laser testLaser(originPoints, direction);
 	fill_barrier_tank();
 	caculate_laser(testLaser);
@@ -115,7 +112,7 @@ int main()
 		// Environment Render
 		environmentShader.use();
 		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 proj = glm::perspective(glm::radians(camera.Zoom), (float)VIEW_WIDTH / (float)VIEW_HEIGHT, 0.1f, 1000.f);//平截头体
+		glm::mat4 proj = glm::perspective(glm::radians(camera.Zoom), (float)VIEW_WIDTH / (float)VIEW_HEIGHT, 0.1f, 1000.f);//frustum
 		glUniformMatrix4fv(glGetUniformLocation(environmentShader.program, "model"),1,GL_FALSE,glm::value_ptr(model));
 		glUniformMatrix4fv(glGetUniformLocation(environmentShader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(environmentShader.program, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
@@ -211,7 +208,7 @@ GLFWwindow* initViewWindow(){
 	// Define the viewport dimensions
 	glViewport(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
 
-	glEnable(GL_DEPTH_TEST);//开启深度测试
+	glEnable(GL_DEPTH_TEST);//open depth test
 	return window;
 }
 void caculate_laser(Laser &laser) {
@@ -305,8 +302,8 @@ bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir,
 
 	return true;
 }
-//将barrierMesh中的三角形填充到计算缓冲
-//TODO 取消缓冲直接计算以加快运行速度
+//fill triangles to compute buffer tank
+//TODO cancel buffer tank, get data dircetly from laserBarrierMesh to accelerate
 void fill_barrier_tank()
 {
 	vector<Mesh>::iterator first = laserBarrierMesh.begin();
