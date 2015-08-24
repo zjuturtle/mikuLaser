@@ -87,7 +87,7 @@ public:
 			this->Position += this->Up * velocity;
 		if (direction == DOWN)
 			this->Position -= this->Up * velocity;
-		std::cout << this->Position.x<< " "<<this->Position.y<< " "<<this->Position.z << std::endl;
+		std::cout <<"Camera position "<< this->Position.x<< " "<<this->Position.y<< " "<<this->Position.z << std::endl;
 	}
 	void ProcessMousePress(int button,int action,int mods)
 	{

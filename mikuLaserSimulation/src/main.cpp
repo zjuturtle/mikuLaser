@@ -24,9 +24,11 @@
 #include "Mesh.h"
 #include "load.h"
 #include "Laser.h"
+#include "PointCloud.h"
 using namespace std;
 
 // Function prototypes
+void init();
 GLFWwindow* initViewWindow();
 GLFWwindow* initPointCloudWindow();
 
@@ -37,7 +39,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window,int button, int action, int mods);
 
 //caculate laser
-void caculate_laser(Laser &laser);
+void caculate_laser(Laser &laser,PointCloud &pointCloud);
 void fill_barrier_tank();
 bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir,
 	glm::vec3& v0, glm::vec3& v1, glm::vec3& v2,
@@ -67,50 +69,73 @@ bool firstMouse = true;
 vector<Mesh> laserBarrierMesh;
 vector<glm::vec3> laserBarrierTriangles;
 
+//point cloud
+PointCloud pointCloud;
+
 
 // The MAIN function, from here we start the application and run the game loop
 int main()
 {
 
 	//Initialize laser simulation window
-	GLFWwindow* viewWindow=initViewWindow();
+	init();
 	GLFWwindow* pointCloudWindow = initPointCloudWindow();
 
+	GLFWwindow* viewWindow=initViewWindow();
+
+	// Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
+	glewExperimental = GL_TRUE;
+	// Initialize GLEW to setup the OpenGL Function pointers
+	glewInit();
+
+	// Set up view window:
+	//NOTICE:function glfwMakeContextCurrent is very important during multi window,please be careful with calling sequence
+	glfwMakeContextCurrent(viewWindow);
+
 	//compile and link shader
-	Shader laserShader(laserVertexShaderSourceFileName,laserFragmentShaderSourceFileName );
-	Shader environmentShader(environmentVertexShaderSourceFileName,environmentFragmentShaderSourceFileName);
-	Shader pointCloudShader(pointCloudVertexShaderSourceFileName,pointCloudFragmentShaderSourceFileName);
+	Shader laserShader(laserVertexShaderSourceFileName, laserFragmentShaderSourceFileName);
+	Shader environmentShader(environmentVertexShaderSourceFileName, environmentFragmentShaderSourceFileName);
 
 	//load environment model
 	vector<Vertex> vertices;
 	vector<Texture> textures;
 	vector<GLuint> indices;
-	loadGroundMesh(vertices,indices,textures);
-	Mesh environmentMesh(vertices,indices,textures);
+	loadGroundMesh(vertices, indices, textures);
+	Mesh environmentMesh(vertices, indices, textures);
+	environmentMesh.setupMesh();
 	laserBarrierMesh.push_back(environmentMesh);//load environment into memory for laser compute
 	fill_barrier_tank();
 
 	//caculate laser
 	vector<glm::vec3> originPoints;
 	vector<glm::vec3> direction;
-	originPoints.push_back(glm::vec3(0.f,0.0f,5.0f));
-	direction.push_back(glm::vec3(0.f,0.f,-1.f));
+	originPoints.push_back(glm::vec3(0.f, 0.0f, 5.0f));
+	direction.push_back(glm::vec3(0.f, 0.f, -1.f));
 
 	Laser testLaser(originPoints, direction);
 	fill_barrier_tank();
-	caculate_laser(testLaser);
-	testLaser.setupLaser();  
+	caculate_laser(testLaser, pointCloud);
+	testLaser.setupLaser();
+
+
+	// Set up pointCloud window:
+	glfwMakeContextCurrent(pointCloudWindow);
+	Shader pointCloudShader(pointCloudVertexShaderSourceFileName,pointCloudFragmentShaderSourceFileName);
+	pointCloud.setupPointCloud();
+
+	//model matrix default to be identity
 	glm::mat4 model;
 
 	//point cloud view
-
-
+	
 	// Game loop
 	while (!glfwWindowShouldClose(viewWindow))
 	{
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		glfwPollEvents();
 
+		// Process view window
+		glfwMakeContextCurrent(viewWindow);
 		
 		// Clear the colorbuffer
 		glClearColor(BACK_GROUND_COLOR[0], BACK_GROUND_COLOR[1], BACK_GROUND_COLOR[2], BACK_GROUND_COLOR[3]);
@@ -133,7 +158,23 @@ int main()
 		glUniform4f(glGetUniformLocation(laserShader.program, "laserColor"), LASER_COLOR[0], LASER_COLOR[1], LASER_COLOR[2], LASER_COLOR[3]);
 		testLaser.Draw(laserShader);
 
-		// Swap the screen buffers
+
+
+		// Process point cloud view window
+		glfwMakeContextCurrent(pointCloudWindow);
+		// Clear the colorbuffer
+		glClearColor(BACK_GROUND_COLOR[0], BACK_GROUND_COLOR[1], BACK_GROUND_COLOR[2], BACK_GROUND_COLOR[3]);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// PointCloud Render
+		pointCloudShader.use();
+		glUniformMatrix4fv(glGetUniformLocation(pointCloudShader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(glGetUniformLocation(pointCloudShader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(pointCloudShader.program, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
+		pointCloud.Draw(pointCloudShader);
+
+
+		// Swap the view screen buffers
 		glfwSwapBuffers(viewWindow);
 		glfwSwapBuffers(pointCloudWindow);
 	}
@@ -188,16 +229,21 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	camera.ProcessMouseScroll(yoffset);
 }
 
-GLFWwindow* initViewWindow(){
-	std::cout << "Starting GLFW view context, OpenGL 3.3" << std::endl;
+void init() {
+	std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
 	// Init GLFW
 	glfwInit();
+
 	// Set all the required options for GLFW
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
+}
+
+GLFWwindow* initViewWindow(){
+	
 	// Create a GLFWwindow object that we can use for GLFW's functions
 	GLFWwindow* window = glfwCreateWindow(VIEW_WIDTH, VIEW_HEIGHT, "mikuLaserSimulation", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
@@ -208,10 +254,6 @@ GLFWwindow* initViewWindow(){
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetMouseButtonCallback(window,mouse_button_callback);
 
-	// Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
-	glewExperimental = GL_TRUE;
-	// Initialize GLEW to setup the OpenGL Function pointers
-	glewInit();
 
 	// Define the viewport dimensions
 	glViewport(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
@@ -221,24 +263,10 @@ GLFWwindow* initViewWindow(){
 }
 
 GLFWwindow* initPointCloudWindow() {
-	std::cout << "Starting GLFW point cloud context, OpenGL 3.3" << std::endl;
-	// Init GLFW
-	glfwInit();
-	// Set all the required options for GLFW
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
 	GLFWwindow* window = glfwCreateWindow(VIEW_WIDTH, VIEW_HEIGHT, "mikuPointCloudView", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
-
-
-	// Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
-	glewExperimental = GL_TRUE;
-	// Initialize GLEW to setup the OpenGL Function pointers
-	glewInit();
 
 	// Define the viewport dimensions
 	glViewport(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
@@ -246,7 +274,8 @@ GLFWwindow* initPointCloudWindow() {
 	glEnable(GL_DEPTH_TEST);//open depth test
 	return window;
 }
-void caculate_laser(Laser &laser) {
+
+void caculate_laser(Laser &laser,PointCloud &pointCloud) {
 	vector<glm::vec3>::iterator originPointIter = laser.originPoints.begin();
 	vector<glm::vec3>::iterator directIter = laser.dirctions.begin();
 	while (originPointIter!=laser.originPoints.end()) {
@@ -262,6 +291,10 @@ void caculate_laser(Laser &laser) {
 			if (intersectTriangle(orig, dir, v0, v1, v2, &t, &u, &v)) {
 				laser.endPoints.push_back(orig + t*dir);
 				intersectFlag = true;
+				PointCloudPoint p;
+				p.Position = orig + t*dir;
+				p.Color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+				pointCloud.points.push_back(p);
 				break;
 			}else {
 				continue;

@@ -15,7 +15,7 @@ Shader::Shader(const GLchar *vertexSourcePath, const GLchar *fragmentSourcePath)
 	GLchar vertexInfoLog[512];
 	GLchar fragmentInfoLog[512];
 
-	//vertex shader
+	//vertex shader 
 	vertex = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertex,1,&vertexShaderSource_c_str,NULL);
 	glCompileShader(vertex);

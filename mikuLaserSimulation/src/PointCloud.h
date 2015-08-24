@@ -27,6 +27,10 @@ public:
 		// Now that we have all the required data, set the vertex buffers and its attribute pointers.
 	}
 
+	PointCloud(void) {
+		
+	}
+
 	// Render the mesh
 	void Draw(Shader shader)
 	{
@@ -46,6 +50,10 @@ public:
 		glGenVertexArrays(1, &this->VAO);
 		glGenBuffers(1, &this->VBO);
 		glGenBuffers(1, &this->EBO);
+
+		for (int i = 0; i < points.size(); ++i) {
+			indices.push_back(i);
+		}
 
 		glBindVertexArray(this->VAO);
 		// Load data into vertex buffers
