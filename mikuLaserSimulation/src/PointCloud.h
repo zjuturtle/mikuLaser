@@ -20,19 +20,16 @@ public:
 
 	/*  Functions  */
 	// Constructor
-	PointCloud(std::vector<PointCloudPoint> points)
+	PointCloud(std::vector<PointCloudPoint> points,bool setup=true)
 	{
 		this->points = points;
-
+		if (setup)
+			this->setupPointCloud();
 		// Now that we have all the required data, set the vertex buffers and its attribute pointers.
 	}
 
 	PointCloud(void) {
 		
-	}
-
-	~PointCloud() {
-		clearBuffer();
 	}
 
 	// Render the mesh
@@ -50,6 +47,7 @@ public:
 	// Initializes all the buffer objects/arrays
 	void setupPointCloud()
 	{
+		clearBuffer();
 		// Create buffers/arrays
 		glGenVertexArrays(1, &this->VAO);
 		glGenBuffers(1, &this->VBO);

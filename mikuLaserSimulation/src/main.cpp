@@ -2,12 +2,12 @@
 /*About coordinate system:
 This program use classic OpenGL coordinate system(Right-handed System) which looks like this:
 
-	^y
-	|
-	|                (z coordinate is point to you)
-	|
-	|
-	------------->x
+^y
+|
+|                (z coordinate is point to you)
+|
+|
+------------->x
 
 */
 #include <iostream>
@@ -36,6 +36,7 @@ This program use classic OpenGL coordinate system(Right-handed System) which loo
 #include "load.h"
 #include "Laser.h"
 #include "PointCloud.h"
+#include "Model.h"
 using namespace std;
 
 // Function prototypes
@@ -47,10 +48,10 @@ GLFWwindow* initPointCloudWindow();
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void mouse_button_callback(GLFWwindow* window,int button, int action, int mods);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
 //caculate laser
-void caculate_laser(Laser &laser,PointCloud &pointCloud);
+void caculate_laser(Laser &laser, PointCloud &pointCloud);
 void fill_barrier_tank();
 bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir,
 	glm::vec3& v0, glm::vec3& v1, glm::vec3& v2,
@@ -59,25 +60,28 @@ bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir,
 // static settings
 const GLuint VIEW_WIDTH = 800, VIEW_HEIGHT = 600;
 const GLfloat BACK_GROUND_COLOR[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-const glm::vec4 LASER_COLOR = glm::vec4( 0.0f, 1.0f, 0.0f, 1.0f );
+const glm::vec4 LASER_COLOR = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 const GLfloat GROUND_WIDTH = 1.0f, GROUND_HEIGHT = 1.0f;
 
-// ShadersFileName
+// Shaders File Path
 const char environmentVertexShaderSourceFileName[] = "shader/environment.vertexShader";
 const char environmentFragmentShaderSourceFileName[] = "shader/environment.fragmentShader";
 const char laserVertexShaderSourceFileName[] = "shader/laser.vertexShader";
 const char laserFragmentShaderSourceFileName[] = "shader/laser.fragmentShader";
 const char pointCloudVertexShaderSourceFileName[] = "shader/pointCloud.vertexShader";
 const char pointCloudFragmentShaderSourceFileName[] = "shader/pointCloud.fragmentShader";
+const char humanModelVertexShaderSourceFileName[] = "shader/humanModel.vertexShader";
+const char humanModelFragmentShaderSourceFileName[] = "shader/humanModel.fragmentShader";
 
+// Model file path
+const char humanModelPath[] = "resource/nanosuit/nanosuit.obj";
 
 //camera 
-Camera camera=Camera::Camera();
+Camera camera(glm::vec3(-3.f,0.f,0.2f));
 GLfloat lastX = 400, lastY = 300;
 bool firstMouse = true;
 
-//all stuff meshs
-vector<Mesh> laserBarrierMesh;
+//all stuff barrier triangles
 vector<glm::vec3> laserBarrierTriangles;
 
 //point cloud
@@ -87,22 +91,11 @@ PointCloud pointCloud;
 // The MAIN function, from here we start the application and run the game loop
 int main()
 {
-	//while (true) {
-	//	GLfloat YAW,PITCH,ROLL;
-	//	cout << "Press YAW PITCH ROLL" << endl;
-	//	std::cin >> YAW;
-	//	std::cin >> PITCH;
-	//	std::cin >> ROLL;
-	//	Laser la(glm::vec3(0.0f, 0.0f, 0.0f), 5, 270.f, YAW,PITCH,ROLL);
-	//}
-	
-//	return 0;
-
 	//Initialize laser simulation window
 	init();
 	GLFWwindow* pointCloudWindow = initPointCloudWindow();
 
-	GLFWwindow* viewWindow=initViewWindow();
+	GLFWwindow* viewWindow = initViewWindow();
 
 	// Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
 	glewExperimental = GL_TRUE;
@@ -114,8 +107,9 @@ int main()
 	glfwMakeContextCurrent(viewWindow);
 
 	//compile and link shader
-	Shader laserShader(laserVertexShaderSourceFileName, laserFragmentShaderSourceFileName);
+	//Shader laserShader(laserVertexShaderSourceFileName, laserFragmentShaderSourceFileName);
 	Shader environmentShader(environmentVertexShaderSourceFileName, environmentFragmentShaderSourceFileName);
+	Shader humanModelShader(humanModelVertexShaderSourceFileName, humanModelFragmentShaderSourceFileName);
 
 	//load environment model
 	vector<Vertex> vertices;
@@ -123,32 +117,31 @@ int main()
 	vector<GLuint> indices;
 	loadGroundMesh(vertices, indices, textures);
 	Mesh environmentMesh(vertices, indices, textures);
-	environmentMesh.setupMesh();
-	laserBarrierMesh.push_back(environmentMesh);//load environment into memory for laser compute
+	//laserBarrierMesh.push_back(environmentMesh);//load environment into memory for laser compute
 
-	//caculate laser
-	//vector<glm::vec3> originPoints;
-	//vector<glm::vec3> direction;
-	//originPoints.push_back(glm::vec3(0.f, 0.0f, 1.0f));
-	//direction.push_back(glm::vec3(0.f, 0.1f, -1.f));
+	//load human model
+	Model humanModel("resource/nanosuit/nanosuit.obj",0.115f);//scale the human model so the height is able 1.78m
 
-	//Laser testLaser(originPoints, direction);
-	Laser testLaser(glm::vec3(0.0f,0.0f,1.0f),514,60.f,0.f,60.f,90.f);
-	fill_barrier_tank();
-	caculate_laser(testLaser, pointCloud);
-	testLaser.setupLaser();
-
+	//caculate and load laser
+	//Laser testLaser(glm::vec3(0.0f, 0.0f, 1.0f), 514, 160.f, 0.f, 60.f, 0.f, false);
+	//fill_barrier_tank();
+	//caculate_laser(testLaser, pointCloud);
+	//testLaser.setupLaser();
 
 	// Set up pointCloud window:
 	glfwMakeContextCurrent(pointCloudWindow);
-	Shader pointCloudShader(pointCloudVertexShaderSourceFileName,pointCloudFragmentShaderSourceFileName);
+	Shader pointCloudShader(pointCloudVertexShaderSourceFileName, pointCloudFragmentShaderSourceFileName);
 	pointCloud.setupPointCloud();
 
 	//model matrix default to be identity
-	glm::mat4 model;
+	glm::mat4 publicModelMatrix;
+	glm::mat4 humanModelMatrix;
+
+	humanModelMatrix = glm::rotate(humanModelMatrix,glm::radians(90.f),glm::vec3(1.0f,0.0f,0.0f));
+	humanModelMatrix = glm::rotate(humanModelMatrix, glm::radians(-90.f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	//point cloud view
-	
+
 	// Game loop
 	while (!glfwWindowShouldClose(viewWindow))
 	{
@@ -157,27 +150,34 @@ int main()
 
 		// Process view window
 		glfwMakeContextCurrent(viewWindow);
-		
+
 		// Clear the colorbuffer
 		glClearColor(BACK_GROUND_COLOR[0], BACK_GROUND_COLOR[1], BACK_GROUND_COLOR[2], BACK_GROUND_COLOR[3]);
-		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Environment Render
 		environmentShader.use();
 		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 proj = glm::perspective(glm::radians(camera.Zoom), (float)VIEW_WIDTH / (float)VIEW_HEIGHT, 0.1f, 1000.f);//frustum
-		glUniformMatrix4fv(glGetUniformLocation(environmentShader.program, "model"),1,GL_FALSE,glm::value_ptr(model));
+		glm::mat4 proj = glm::perspective(glm::radians(camera.Zoom), (float)VIEW_WIDTH / (float)VIEW_HEIGHT, 0.1f, 100.f);//frustum
+		glUniformMatrix4fv(glGetUniformLocation(environmentShader.program, "model"), 1, GL_FALSE, glm::value_ptr(publicModelMatrix));
 		glUniformMatrix4fv(glGetUniformLocation(environmentShader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(environmentShader.program, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
 		environmentMesh.Draw(environmentShader);
 
+		//Human Model Reader
+		humanModelShader.use();	
+		glUniformMatrix4fv(glGetUniformLocation(humanModelShader.program, "model"), 1, GL_FALSE, glm::value_ptr(humanModelMatrix));
+		glUniformMatrix4fv(glGetUniformLocation(humanModelShader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(humanModelShader.program, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
+		humanModel.Draw(humanModelShader);
+
 		//Laser Render
-		laserShader.use();
-		glUniformMatrix4fv(glGetUniformLocation(laserShader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		/*laserShader.use();
+		glUniformMatrix4fv(glGetUniformLocation(laserShader.program, "model"), 1, GL_FALSE, glm::value_ptr(publicModelMatrix));
 		glUniformMatrix4fv(glGetUniformLocation(laserShader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(laserShader.program, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
-		glUniform4f(glGetUniformLocation(laserShader.program, "laserColor"), LASER_COLOR[0], LASER_COLOR[1], LASER_COLOR[2], LASER_COLOR[3]);
-		testLaser.Draw(laserShader);
+		glUniform4f(glGetUniformLocation(laserShader.program, "laserColor"), LASER_COLOR[0], LASER_COLOR[1], LASER_COLOR[2], LASER_COLOR[3]);*/
+		//testLaser.Draw(laserShader);
 
 
 
@@ -189,7 +189,7 @@ int main()
 
 		// PointCloud Render
 		pointCloudShader.use();
-		glUniformMatrix4fv(glGetUniformLocation(pointCloudShader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(glGetUniformLocation(pointCloudShader.program, "model"), 1, GL_FALSE, glm::value_ptr(publicModelMatrix));
 		glUniformMatrix4fv(glGetUniformLocation(pointCloudShader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(pointCloudShader.program, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
 		pointCloud.Draw(pointCloudShader);
@@ -211,9 +211,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
-	if (key == GLFW_KEY_UP && action == GLFW_PRESS) 
-		camera.ProcessKeyboard(Camera_Movement::FORWARD, 0.02f);	
-	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) 
+	if (key == GLFW_KEY_UP && action == GLFW_PRESS)
+		camera.ProcessKeyboard(Camera_Movement::FORWARD, 0.02f);
+	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
 		camera.ProcessKeyboard(Camera_Movement::BACKWARD, 0.02f);
 	if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
 		camera.ProcessKeyboard(Camera_Movement::LEFT, 0.02f);
@@ -242,7 +242,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void mouse_button_callback(GLFWwindow* window,int button, int action, int mods) {
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
 	camera.ProcessMousePress(button, action, mods);
 }
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -263,8 +263,8 @@ void init() {
 
 }
 
-GLFWwindow* initViewWindow(){
-	
+GLFWwindow* initViewWindow() {
+
 	// Create a GLFWwindow object that we can use for GLFW's functions
 	GLFWwindow* window = glfwCreateWindow(VIEW_WIDTH, VIEW_HEIGHT, "mikuLaserSimulation", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
@@ -273,7 +273,7 @@ GLFWwindow* initViewWindow(){
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
-	glfwSetMouseButtonCallback(window,mouse_button_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 
 	// Define the viewport dimensions
@@ -296,13 +296,13 @@ GLFWwindow* initPointCloudWindow() {
 	return window;
 }
 
-void caculate_laser(Laser &laser,PointCloud &pointCloud) {
+void caculate_laser(Laser &laser, PointCloud &pointCloud) {
 	vector<glm::vec3>::iterator originPointIter = laser.originPoints.begin();
 	vector<glm::vec3>::iterator directIter = laser.dirctions.begin();
-	while (originPointIter!=laser.originPoints.end()) {
+	while (originPointIter != laser.originPoints.end()) {
 		vector<glm::vec3>::iterator barrierTrianglesVertex = laserBarrierTriangles.begin();
 		bool intersectFlag = false;
-		while (barrierTrianglesVertex!=laserBarrierTriangles.end()) {
+		while (barrierTrianglesVertex != laserBarrierTriangles.end()) {
 			glm::vec3 v0 = *(barrierTrianglesVertex); ++barrierTrianglesVertex;
 			glm::vec3 v1 = *(barrierTrianglesVertex); ++barrierTrianglesVertex;
 			glm::vec3 v2 = *(barrierTrianglesVertex); ++barrierTrianglesVertex;
@@ -317,13 +317,14 @@ void caculate_laser(Laser &laser,PointCloud &pointCloud) {
 				p.Color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 				pointCloud.points.push_back(p);
 				break;
-			}else {
+			}
+			else {
 				continue;
 			}
 		}
 		if (!intersectFlag) {
 			laser.endPoints.push_back(10000.f*glm::normalize(*directIter));
-			(*directIter)=glm::vec3(0,0,0);// if no intersection, set direction to (0,0,0)
+			(*directIter) = glm::vec3(0, 0, 0);// if no intersection, set direction to (0,0,0)
 		}
 		++originPointIter;
 		++directIter;
@@ -370,7 +371,7 @@ bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir,
 		return false;
 
 	// Calculate u and make sure u <= 1
-	*u = glm::dot(T, P); 
+	*u = glm::dot(T, P);
 	if (*u < 0.0f || *u > det)
 		return false;
 
@@ -378,12 +379,12 @@ bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir,
 	glm::vec3 Q = glm::cross(T, E1);
 
 	// Calculate v and make sure u + v <= 1
-	*v = glm::dot(dir, Q); 
+	*v = glm::dot(dir, Q);
 	if (*v < 0.0f || *u + *v > det)
 		return false;
 
 	// Calculate t, scale parameters, ray intersects triangle
-	*t = glm::dot(E2,Q);
+	*t = glm::dot(E2, Q);
 
 	float fInvDet = 1.0f / det;
 	*t *= fInvDet;
@@ -394,14 +395,14 @@ bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir,
 }
 //fill triangles to compute buffer tank
 //TODO cancel buffer tank, get data dircetly from laserBarrierMesh to accelerate
-void fill_barrier_tank()
+void fill_barrier_tank(vector<Mesh> &meshs)
 {
-	vector<Mesh>::iterator first = laserBarrierMesh.begin();
-	int triangleNum=0;
-	while (first != laserBarrierMesh.end()) {
-		triangleNum += (*first).indices.size()/3;
+	vector<Mesh>::iterator first = meshs.begin();
+	int triangleNum = 0;
+	while (first != meshs.end()) {
+		triangleNum += (*first).indices.size() / 3;
 		vector<GLuint>::iterator it = (*first).indices.begin();
-		while (it!=(*first).indices.end()) {
+		while (it != (*first).indices.end()) {
 			laserBarrierTriangles.push_back((*first).vertices[(*it)].Position);
 			++it;
 		}

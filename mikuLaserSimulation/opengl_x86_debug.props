@@ -3,12 +3,15 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(Solutiondir)opengl_lib\glew_1.13.0\include;$(Solutiondir)opengl_lib\glfw_3.1.1\include;$(Solutiondir)opengl_lib\glm_0.9.7.0\include;$(Solutiondir)opengl_lib\SOIL\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(Solutiondir)opengl_lib\glew_1.13.0;$(Solutiondir)opengl_lib\glfw_3.1.1;$(Solutiondir)opengl_lib\SOIL;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(Solutiondir)opengl_lib\glew_1.13.0\include;$(Solutiondir)opengl_lib\glfw_3.1.1\include;$(Solutiondir)opengl_lib\glm_0.9.7.0\include;$(Solutiondir)opengl_lib\SOIL\include;$(Solutiondir)opengl_lib\assimp_3.1.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(Solutiondir)opengl_lib\glew_1.13.0;$(Solutiondir)opengl_lib\glfw_3.1.1;$(Solutiondir)opengl_lib\SOIL;$(Solutiondir)opengl_lib\assimp_3.1.1;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(Solutiondir)opengl_lib\dll\x86;$(ExecutablePath)</ExecutablePath>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
+    <LibraryWPath>$(LibraryWPath)</LibraryWPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glew_x86sd.lib;glfw3_x86d.lib;SOIL_x86d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew_x86sd.lib;glfw3_x86d.lib;SOIL_x86d.lib;assimp_x86d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

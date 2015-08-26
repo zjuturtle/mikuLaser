@@ -11,15 +11,16 @@ public:
 	std::vector<glm::vec3> dirctions;
 	/*  Functions  */
 	// Constructor
-	Laser(std::vector<glm::vec3> originPoints, std::vector<glm::vec3> dirctions)
+	Laser(std::vector<glm::vec3> originPoints, std::vector<glm::vec3> dirctions,bool setup=true)
 	{
 		this->originPoints = originPoints;
 		this->dirctions = dirctions;
-
+		if (setup)
+			this->setupLaser();
 	}
 
 	//for SICK laser
-	Laser(glm::vec3 originPoint,GLuint laserNum,GLfloat angle,GLfloat YAW,GLfloat PITCH,GLfloat ROLL=0.0f) {
+	Laser(glm::vec3 originPoint,GLuint laserNum,GLfloat angle,GLfloat YAW,GLfloat PITCH,GLfloat ROLL=0.0f, bool setup = true) {
 		for (int i = 0; i < laserNum; i++)
 			originPoints.push_back(originPoint);
 		glm::mat4 rotateMatrix;
@@ -31,12 +32,9 @@ public:
 			glm::vec4 endPoint(cos(glm::radians(theta)),-sin(glm::radians(theta)),0.0,1.0f);
 			endPoint = rotateMatrix*endPoint;
 			dirctions.push_back( glm::vec3(endPoint.x / endPoint.w, endPoint.y / endPoint.w, endPoint.z / endPoint.w) );
-
 		}
-	}
-
-	~Laser() {
-		clearBuffer();
+		if (setup)
+			this->setupLaser();
 	}
 
 	// Render the mesh
@@ -55,6 +53,7 @@ public:
 	// Initializes all the buffer objects/arrays
 	void setupLaser()
 	{
+		clearBuffer();
 		std::vector<glm::vec3> vertices(originPoints);
 		vertices.insert(vertices.end(), endPoints.begin(), endPoints.end());
 
@@ -90,6 +89,7 @@ public:
 	//clear graphic buffer
 	void clearBuffer() {
 		if (hasSetuped) {
+			indices.clear();
 			glDeleteVertexArrays(1, &VAO);
 			glDeleteBuffers(1, &VBO);
 			glDeleteBuffers(1, &EBO);

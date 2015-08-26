@@ -38,20 +38,20 @@ public:
 
 	/*  Functions  */
 	// Constructor
-	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures)
+	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures,bool setup=true)
 	{
 		this->vertices = vertices;
 		this->indices = indices;
 		this->textures = textures;
+		if (setup)
+			this->setupMesh();
 	}
 
-	~Mesh() {
-		clearBuffer();
-	}
 	/*  Functions    */
 	// Initializes all the buffer objects/arrays
 	void setupMesh()
 	{
+		clearBuffer();
 		// Create buffers/arrays
 		glGenVertexArrays(1, &this->VAO);
 		glGenBuffers(1, &this->VBO);
@@ -80,6 +80,7 @@ public:
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, TexCoords));
 
 		glBindVertexArray(0);
+		hasSetuped = true;
 	}
 
 	// Render the mesh
@@ -100,7 +101,7 @@ public:
 				ss << diffuseNr++; // Transfer GLuint to stream
 			}
 			else if (textures[i].type == TextureType::Specular) {
-				name == "texture_specular";
+				name = "texture_specular";
 				ss << specularNr++; // Transfer GLuint to stream
 			}
 			number = ss.str();
@@ -124,7 +125,7 @@ public:
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
-		hasSetuped = true;
+
 	}
 
 	//clear graphic buffer
