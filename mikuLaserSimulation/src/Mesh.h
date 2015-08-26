@@ -45,6 +45,9 @@ public:
 		this->textures = textures;
 	}
 
+	~Mesh() {
+		clearBuffer();
+	}
 	/*  Functions    */
 	// Initializes all the buffer objects/arrays
 	void setupMesh()
@@ -121,11 +124,20 @@ public:
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
+		hasSetuped = true;
 	}
 
+	//clear graphic buffer
+	void clearBuffer() {
+		if (hasSetuped) {
+			glDeleteVertexArrays(1, &VAO);
+			glDeleteBuffers(1, &VBO);
+			glDeleteBuffers(1, &EBO);
+		}
+	}
 private:
 	/*  Render data  */
 	GLuint VAO, VBO, EBO;
-
+	bool hasSetuped=false;
 	
 }; 

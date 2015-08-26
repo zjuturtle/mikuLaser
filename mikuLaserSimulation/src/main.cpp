@@ -1,4 +1,15 @@
 
+/*About coordinate system:
+This program use classic OpenGL coordinate system(Right-handed System) which looks like this:
+
+	^y
+	|
+	|                (z coordinate is point to you)
+	|
+	|
+	------------->x
+
+*/
 #include <iostream>
 #include <fstream>
 
@@ -76,6 +87,16 @@ PointCloud pointCloud;
 // The MAIN function, from here we start the application and run the game loop
 int main()
 {
+	//while (true) {
+	//	GLfloat YAW,PITCH,ROLL;
+	//	cout << "Press YAW PITCH ROLL" << endl;
+	//	std::cin >> YAW;
+	//	std::cin >> PITCH;
+	//	std::cin >> ROLL;
+	//	Laser la(glm::vec3(0.0f, 0.0f, 0.0f), 5, 270.f, YAW,PITCH,ROLL);
+	//}
+	
+//	return 0;
 
 	//Initialize laser simulation window
 	init();
@@ -104,15 +125,15 @@ int main()
 	Mesh environmentMesh(vertices, indices, textures);
 	environmentMesh.setupMesh();
 	laserBarrierMesh.push_back(environmentMesh);//load environment into memory for laser compute
-	fill_barrier_tank();
 
 	//caculate laser
-	vector<glm::vec3> originPoints;
-	vector<glm::vec3> direction;
-	originPoints.push_back(glm::vec3(0.f, 0.0f, 5.0f));
-	direction.push_back(glm::vec3(0.f, 0.f, -1.f));
+	//vector<glm::vec3> originPoints;
+	//vector<glm::vec3> direction;
+	//originPoints.push_back(glm::vec3(0.f, 0.0f, 1.0f));
+	//direction.push_back(glm::vec3(0.f, 0.1f, -1.f));
 
-	Laser testLaser(originPoints, direction);
+	//Laser testLaser(originPoints, direction);
+	Laser testLaser(glm::vec3(0.0f,0.0f,1.0f),514,60.f,0.f,60.f,90.f);
 	fill_barrier_tank();
 	caculate_laser(testLaser, pointCloud);
 	testLaser.setupLaser();
