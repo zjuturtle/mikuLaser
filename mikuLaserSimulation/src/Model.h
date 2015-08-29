@@ -23,6 +23,7 @@ GLint TextureFromFile(const char* path, string directory);
 class Model
 {
 public:
+	vector<Mesh> meshes;
 	/*  Functions   */
 	// Constructor, expects a filepath to a 3D model.
 	Model(GLchar* path,GLfloat scale=1.0f)
@@ -38,11 +39,11 @@ public:
 		for (GLuint i = 0; i < this->meshes.size(); i++)
 			this->meshes[i].Draw(shader);
 	}
-
+	
 private:
 	/*  Model Data  */
 	GLfloat scale=1.0f;
-	vector<Mesh> meshes;
+	
 	string directory;
 	vector<Texture> textures_loaded;	// Stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
 

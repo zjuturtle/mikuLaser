@@ -52,7 +52,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 //caculate laser
 void caculate_laser(Laser &laser, PointCloud &pointCloud);
-void fill_barrier_tank();
+void fill_barrier_tank(const vector<Mesh> &meshs,const glm::mat4 &model);
+void fill_barrier_tank(const Mesh &mesh, const glm::mat4 &model);
+void fill_barrier_tank(const vector<Mesh> &meshs);
+void fill_barrier_tank(const Mesh &mesh);
 bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir,
 	glm::vec3& v0, glm::vec3& v1, glm::vec3& v2,
 	float* t, float* u, float* v);
@@ -107,7 +110,7 @@ int main()
 	glfwMakeContextCurrent(viewWindow);
 
 	//compile and link shader
-	//Shader laserShader(laserVertexShaderSourceFileName, laserFragmentShaderSourceFileName);
+	Shader laserShader(laserVertexShaderSourceFileName, laserFragmentShaderSourceFileName);
 	Shader environmentShader(environmentVertexShaderSourceFileName, environmentFragmentShaderSourceFileName);
 	Shader humanModelShader(humanModelVertexShaderSourceFileName, humanModelFragmentShaderSourceFileName);
 
@@ -117,28 +120,30 @@ int main()
 	vector<GLuint> indices;
 	loadGroundMesh(vertices, indices, textures);
 	Mesh environmentMesh(vertices, indices, textures);
-	//laserBarrierMesh.push_back(environmentMesh);//load environment into memory for laser compute
+	fill_barrier_tank(environmentMesh);//load environment into memory for laser compute
 
 	//load human model
 	Model humanModel("resource/nanosuit/nanosuit.obj",0.115f);//scale the human model so the height is able 1.78m
 
+	//model matrix default to be identity
+	glm::mat4 publicModelMatrix;
+	glm::mat4 humanModelMatrix;
+
+	humanModelMatrix = glm::rotate(humanModelMatrix, glm::radians(90.f), glm::vec3(1.0f, 0.0f, 0.0f));
+	humanModelMatrix = glm::rotate(humanModelMatrix, glm::radians(-90.f), glm::vec3(0.0f, 1.0f, 0.0f));
+
 	//caculate and load laser
-	//Laser testLaser(glm::vec3(0.0f, 0.0f, 1.0f), 514, 160.f, 0.f, 60.f, 0.f, false);
-	//fill_barrier_tank();
-	//caculate_laser(testLaser, pointCloud);
-	//testLaser.setupLaser();
+	Laser testLaser(glm::vec3(-0.8f, 0.f, 1.5), 514, 160.f, 0.f, 45.f, 0.f, false);
+	fill_barrier_tank(humanModel.meshes, humanModelMatrix);
+	caculate_laser(testLaser, pointCloud);
+	testLaser.setupLaser();
 
 	// Set up pointCloud window:
 	glfwMakeContextCurrent(pointCloudWindow);
 	Shader pointCloudShader(pointCloudVertexShaderSourceFileName, pointCloudFragmentShaderSourceFileName);
 	pointCloud.setupPointCloud();
 
-	//model matrix default to be identity
-	glm::mat4 publicModelMatrix;
-	glm::mat4 humanModelMatrix;
-
-	humanModelMatrix = glm::rotate(humanModelMatrix,glm::radians(90.f),glm::vec3(1.0f,0.0f,0.0f));
-	humanModelMatrix = glm::rotate(humanModelMatrix, glm::radians(-90.f), glm::vec3(0.0f, 1.0f, 0.0f));
+	
 
 	//point cloud view
 
@@ -172,12 +177,12 @@ int main()
 		humanModel.Draw(humanModelShader);
 
 		//Laser Render
-		/*laserShader.use();
+		laserShader.use();
 		glUniformMatrix4fv(glGetUniformLocation(laserShader.program, "model"), 1, GL_FALSE, glm::value_ptr(publicModelMatrix));
 		glUniformMatrix4fv(glGetUniformLocation(laserShader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(laserShader.program, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
-		glUniform4f(glGetUniformLocation(laserShader.program, "laserColor"), LASER_COLOR[0], LASER_COLOR[1], LASER_COLOR[2], LASER_COLOR[3]);*/
-		//testLaser.Draw(laserShader);
+		glUniform4f(glGetUniformLocation(laserShader.program, "laserColor"), LASER_COLOR[0], LASER_COLOR[1], LASER_COLOR[2], LASER_COLOR[3]);
+		testLaser.Draw(laserShader);
 
 
 
@@ -302,6 +307,8 @@ void caculate_laser(Laser &laser, PointCloud &pointCloud) {
 	while (originPointIter != laser.originPoints.end()) {
 		vector<glm::vec3>::iterator barrierTrianglesVertex = laserBarrierTriangles.begin();
 		bool intersectFlag = false;
+		int test = 0;
+		GLfloat intersectDistance = 10000.f;
 		while (barrierTrianglesVertex != laserBarrierTriangles.end()) {
 			glm::vec3 v0 = *(barrierTrianglesVertex); ++barrierTrianglesVertex;
 			glm::vec3 v1 = *(barrierTrianglesVertex); ++barrierTrianglesVertex;
@@ -310,21 +317,22 @@ void caculate_laser(Laser &laser, PointCloud &pointCloud) {
 			glm::vec3 dir = *(directIter);
 			float t, u, v;
 			if (intersectTriangle(orig, dir, v0, v1, v2, &t, &u, &v)) {
-				laser.endPoints.push_back(orig + t*dir);
 				intersectFlag = true;
-				PointCloudPoint p;
-				p.Position = orig + t*dir;
-				p.Color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-				pointCloud.points.push_back(p);
-				break;
-			}
-			else {
-				continue;
+				intersectDistance = intersectDistance > t ? t : intersectDistance;
+				test++;
 			}
 		}
+		cout << "test " << test << endl;
 		if (!intersectFlag) {
 			laser.endPoints.push_back(10000.f*glm::normalize(*directIter));
 			(*directIter) = glm::vec3(0, 0, 0);// if no intersection, set direction to (0,0,0)
+		}else {
+			laser.endPoints.push_back(*(originPointIter)+intersectDistance*(*directIter));
+			intersectFlag = true;
+			PointCloudPoint p;
+			p.Position = *(originPointIter)+intersectDistance*(*directIter);
+			p.Color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+			pointCloud.points.push_back(p);
 		}
 		++originPointIter;
 		++directIter;
@@ -367,7 +375,7 @@ bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir,
 	}
 
 	// If determinant is near zero, ray lies in plane of triangle
-	if (det < 0.0001f)
+	if (det < 0.000001f)
 		return false;
 
 	// Calculate u and make sure u <= 1
@@ -395,17 +403,62 @@ bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir,
 }
 //fill triangles to compute buffer tank
 //TODO cancel buffer tank, get data dircetly from laserBarrierMesh to accelerate
-void fill_barrier_tank(vector<Mesh> &meshs)
+void fill_barrier_tank(const vector<Mesh> &meshs)
 {
-	vector<Mesh>::iterator first = meshs.begin();
+	vector<Mesh>::const_iterator first = meshs.begin();
 	int triangleNum = 0;
 	while (first != meshs.end()) {
 		triangleNum += (*first).indices.size() / 3;
-		vector<GLuint>::iterator it = (*first).indices.begin();
+		vector<GLuint>::const_iterator it = (*first).indices.begin();
 		while (it != (*first).indices.end()) {
+
 			laserBarrierTriangles.push_back((*first).vertices[(*it)].Position);
 			++it;
 		}
 		++first;
+	}
+}
+
+void fill_barrier_tank(const vector<Mesh> &meshs,const glm::mat4 &model)
+{
+	vector<Mesh>::const_iterator first = meshs.begin();
+	int triangleNum = 0;
+	while (first != meshs.end()) {
+		triangleNum += (*first).indices.size() / 3;
+		vector<GLuint>::const_iterator it = (*first).indices.begin();
+		while (it != (*first).indices.end()) {
+			glm::vec4 tmp((*first).vertices[(*it)].Position, 1.0);
+			glm::vec4 tmp2;
+			tmp2 = model*tmp;
+			laserBarrierTriangles.push_back(glm::vec3(tmp2.x / tmp2.w, tmp2.y / tmp2.w, tmp2.z / tmp2.w));
+			++it;
+		}
+		++first;
+	}
+}
+
+void fill_barrier_tank(const Mesh &mesh)
+{
+	int triangleNum = 0;
+	triangleNum += mesh.indices.size() / 3;
+	vector<GLuint>::const_iterator it = mesh.indices.begin();
+	while (it != (mesh).indices.end()) {
+		glm::vec4 tmp((mesh).vertices[(*it)].Position, 1.0);
+		laserBarrierTriangles.push_back((mesh).vertices[(*it)].Position);
+		++it;
+	}
+}
+
+void fill_barrier_tank(const Mesh &mesh, const glm::mat4 &model)
+{
+	int triangleNum = 0;
+	triangleNum += mesh.indices.size() / 3;
+	vector<GLuint>::const_iterator it = mesh.indices.begin();
+	while (it != (mesh).indices.end()) {
+		glm::vec4 tmp((mesh).vertices[(*it)].Position,1.0);
+		glm::vec4 tmp2;
+		tmp2 = model*tmp;
+		laserBarrierTriangles.push_back(glm::vec3(tmp2.x/tmp2.w, tmp2.y/tmp2.w, tmp2.z/tmp2.w));
+		++it;
 	}
 }
