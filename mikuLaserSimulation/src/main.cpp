@@ -10,6 +10,7 @@ This program use classic OpenGL coordinate system(Right-handed System) which loo
 ------------->x
 
 */
+#define LASER_FAR 0.f
 #include <iostream>
 #include <fstream>
 
@@ -80,7 +81,7 @@ const char humanModelFragmentShaderSourceFileName[] = "shader/humanModel.fragmen
 const char humanModelPath[] = "resource/nanosuit/nanosuit.obj";
 
 //camera 
-Camera camera(glm::vec3(-3.f,0.f,0.2f));
+Camera camera(glm::vec3(-10.f,0.f,2.f));
 GLfloat lastX = 400, lastY = 300;
 bool firstMouse = true;
 
@@ -133,7 +134,15 @@ int main()
 	humanModelMatrix = glm::rotate(humanModelMatrix, glm::radians(-90.f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	//caculate and load laser
-	Laser testLaser(glm::vec3(-0.8f, 0.f, 1.5), 514, 160.f, 0.f, 45.f, 0.f, false);
+	Laser testLaser;
+	GLfloat startAngle = -10.f;
+	GLfloat endAngle = 45.f;
+	int scanNum = 13;
+	for (int i = 0; i < scanNum;i++ ) {
+		GLfloat angle = (GLfloat)i / (GLfloat)scanNum*abs(endAngle-startAngle)+startAngle;
+		testLaser.addLaser(glm::vec3(-10.f, 0.f, 1.f), 360, 180.f, 0.f, angle, 0.f);
+	}
+
 	fill_barrier_tank(humanModel.meshes, humanModelMatrix);
 	caculate_laser(testLaser, pointCloud);
 	testLaser.setupLaser();
@@ -322,9 +331,8 @@ void caculate_laser(Laser &laser, PointCloud &pointCloud) {
 				test++;
 			}
 		}
-		cout << "test " << test << endl;
 		if (!intersectFlag) {
-			laser.endPoints.push_back(10000.f*glm::normalize(*directIter));
+			laser.endPoints.push_back(LASER_FAR*glm::normalize(*directIter));
 			(*directIter) = glm::vec3(0, 0, 0);// if no intersection, set direction to (0,0,0)
 		}else {
 			laser.endPoints.push_back(*(originPointIter)+intersectDistance*(*directIter));
@@ -394,11 +402,13 @@ bool intersectTriangle(const glm::vec3& orig, const glm::vec3& dir,
 	// Calculate t, scale parameters, ray intersects triangle
 	*t = glm::dot(E2, Q);
 
+
 	float fInvDet = 1.0f / det;
 	*t *= fInvDet;
 	*u *= fInvDet;
 	*v *= fInvDet;
-
+	if (*t < 0)
+		return false;
 	return true;
 }
 //fill triangles to compute buffer tank

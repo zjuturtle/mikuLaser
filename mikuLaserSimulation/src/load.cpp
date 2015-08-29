@@ -26,21 +26,21 @@
 void loadGroundMesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, std::vector<Texture> &textures) {
 	Vertex leftUp, rightUp, leftDown, rightDown;
 
-	leftUp.Position = glm::vec3(-1.0f, 1.0f, 0.0f);
+	leftUp.Position = glm::vec3(-GOROUND_SIZE/2, GOROUND_SIZE / 2, 0.0f);
 	leftUp.Normal = glm::vec3(0.0f, 0.0f, 1.0f);
-	leftUp.TexCoords = glm::vec2(0.0f, 1.0f);
+	leftUp.TexCoords = glm::vec2(0.0f, GOROUND_SIZE / 2);
 
-	rightUp.Position = glm::vec3(1.0f, 1.0f, 0.0f);
+	rightUp.Position = glm::vec3(GOROUND_SIZE / 2, GOROUND_SIZE / 2, 0.0f);
 	rightUp.Normal = glm::vec3(0.0f, 0.0f, 1.0f);
-	rightUp.TexCoords = glm::vec2(1.0f, 1.0f);
+	rightUp.TexCoords = glm::vec2(GOROUND_SIZE / 2, GOROUND_SIZE / 2);
 
-	leftDown.Position = glm::vec3(-1.0f, -1.0f, 0.0f);
+	leftDown.Position = glm::vec3(-GOROUND_SIZE / 2, -GOROUND_SIZE / 2, 0.0f);
 	leftDown.Normal = glm::vec3(0.0f, 0.0f, 1.0f);
 	leftDown.TexCoords = glm::vec2(0.0f, 0.0f);
 
-	rightDown.Position = glm::vec3(1.0f, -1.0f, 0.0f);
+	rightDown.Position = glm::vec3(GOROUND_SIZE / 2, -GOROUND_SIZE / 2, 0.0f);
 	rightDown.Normal = glm::vec3(0.0f, 0.0f, 1.0f);
-	rightDown.TexCoords = glm::vec2(1.0f, 0.0f);
+	rightDown.TexCoords = glm::vec2(GOROUND_SIZE / 2, 0.0f);
 
 	vertices.push_back(leftDown);
 	vertices.push_back(leftUp);
