@@ -5,8 +5,8 @@
   <PropertyGroup>
     <IncludePath>$(Solutiondir)opengl_lib\glew_1.13.0\include;$(Solutiondir)opengl_lib\glfw_3.1.1\include;$(Solutiondir)opengl_lib\glm_0.9.7.0\include;$(Solutiondir)opengl_lib\SOIL\include;$(Solutiondir)opengl_lib\assimp_3.1.1\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(Solutiondir)opengl_lib\glew_1.13.0;$(Solutiondir)opengl_lib\glfw_3.1.1;$(Solutiondir)opengl_lib\SOIL;$(Solutiondir)opengl_lib\assimp_3.1.1;$(LibraryPath)</LibraryPath>
-    <ExecutablePath>$(Solutiondir)opengl_lib\dll\x86;$(ExecutablePath)</ExecutablePath>
-    <ReferencePath>$(ReferencePath)</ReferencePath>
+    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
+    <ReferencePath>$(Solutiondir)opengl_lib\dll\x86;$(ReferencePath)</ReferencePath>
     <LibraryWPath>$(LibraryWPath)</LibraryWPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
