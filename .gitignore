@@ -212,4 +212,4 @@ _Pvt_Extensions/
 ModelManifest.xml
 
 # Resouce file exclude
-!nanosuit.obj
+!resource/
