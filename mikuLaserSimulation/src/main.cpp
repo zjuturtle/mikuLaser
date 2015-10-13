@@ -135,17 +135,10 @@ int main()
 
 	//caculate and load laser
 	Laser testLaser;
-	GLfloat startAngle = -10.f;
-	GLfloat endAngle = 45.f;
-	int scanNum = 13;
-	for (int i = 0; i < scanNum;i++ ) {
-		GLfloat angle = (GLfloat)i / (GLfloat)scanNum*abs(endAngle-startAngle)+startAngle;
-		testLaser.addLaser(glm::vec3(-1.f, 0.f, 1.f), 360, 180.f, 0.f, angle, 0.f);
-	}
+	
 
 	fill_barrier_tank(humanModel.meshes, humanModelMatrix);
-	caculate_laser(testLaser, pointCloud);
-	testLaser.setupLaser();
+
 
 	// Set up pointCloud window:
 	glfwMakeContextCurrent(pointCloudWindow);
@@ -193,8 +186,6 @@ int main()
 		glUniform4f(glGetUniformLocation(laserShader.program, "laserColor"), LASER_COLOR[0], LASER_COLOR[1], LASER_COLOR[2], LASER_COLOR[3]);
 		testLaser.Draw(laserShader);
 
-
-
 		// Process point cloud view window
 		glfwMakeContextCurrent(pointCloudWindow);
 		// Clear the colorbuffer
@@ -237,6 +228,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		camera.ProcessKeyboard(Camera_Movement::UP, 0.02f);
 	if (key == GLFW_KEY_S && action == GLFW_PRESS)
 		camera.ProcessKeyboard(Camera_Movement::DOWN, 0.02f);
+	if (key == GLFW_KEY_G && action == GLFW_PRESS) {
+		//caculate and load laser
+		Laser testLaser;
+		GLfloat startAngle = -10.f;
+		GLfloat endAngle = 45.f;
+		int scanNum = 13;
+		static int scanIndex = 0;
+
+		GLfloat angle = (GLfloat)scanIndex / (GLfloat)scanNum*abs(endAngle - startAngle) + startAngle;
+		testLaser.addLaser(glm::vec3(-1.f, 0.f, 1.f), 180, 90.f, 0.f, angle, 0.f);
+		scanIndex++;
+		caculate_laser(testLaser,pointCloud);
+	}
 }
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -340,7 +344,7 @@ void caculate_laser(Laser &laser, PointCloud &pointCloud) {
 			PointCloudPoint p;
 			p.Position = *(originPointIter)+intersectDistance*(*directIter);
 			p.Color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-			pointCloud.points.push_back(p);
+			pointCloud.addPoint(p);
 		}
 		++originPointIter;
 		++directIter;

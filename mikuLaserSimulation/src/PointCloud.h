@@ -15,12 +15,10 @@ struct PointCloudPoint {
 
 class PointCloud {
 public:
-	/*  Laser Data  */
-	std::vector<PointCloudPoint> points;
 
 	/*  Functions  */
 	// Constructor
-	PointCloud(std::vector<PointCloudPoint> points,bool setup=true)
+	PointCloud(std::vector<PointCloudPoint> points, bool setup = true)
 	{
 		this->points = points;
 		if (setup)
@@ -29,22 +27,38 @@ public:
 	}
 
 	PointCloud(void) {
-		
+
+	}
+
+
+	void addPoint(const PointCloudPoint &p) {
+		if (!hasSetuped)
+			points.push_back(p);
+		else {
+			points.push_back(p);
+			setupPointCloud();
+		}
+	}
+
+	void addPoint(glm::vec3 position, glm::vec4 color) {
+		PointCloudPoint p = { position,color };
+		addPoint(p);
 	}
 
 	// Render the mesh
 	void Draw(Shader shader)
 	{
 		// Draw points
-
-		glBindVertexArray(this->VAO);
-		glDrawElements(GL_POINTS, this->indices.size(), GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
+		if (hasSetuped) {
+			glBindVertexArray(this->VAO);
+			glDrawElements(GL_POINTS, this->indices.size(), GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+		}
 
 	}
 
-	/*  Functions    */
 	// Initializes all the buffer objects/arrays
+	// TODO: Copy point data incrementally 
 	void setupPointCloud()
 	{
 		clearBuffer();
@@ -56,14 +70,14 @@ public:
 		for (int i = 0; i < points.size(); ++i) {
 			indices.push_back(i);
 		}
-		
+
 		glBindVertexArray(this->VAO);
 		// Load data into vertex buffers
 		glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 		// A great thing about structs is that their memory layout is sequential for all its items.
 		// The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
 		// again translates to 3/2 floats which translates to a byte array.
-		if(!points.empty())
+		if (!points.empty())
 			glBufferData(GL_ARRAY_BUFFER, this->points.size() * sizeof(PointCloudPoint), &this->points[0], GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
@@ -89,10 +103,14 @@ public:
 			glDeleteBuffers(1, &VBO);
 			glDeleteBuffers(1, &EBO);
 		}
+		hasSetuped = false;
 	}
 private:
 	/*  Render data  */
 	GLuint VAO, VBO, EBO;
 	std::vector<GLuint> indices;
-	bool hasSetuped=false;
+	bool hasSetuped = false;
+
+	/*  Laser Data  */
+	std::vector<PointCloudPoint> points;
 };

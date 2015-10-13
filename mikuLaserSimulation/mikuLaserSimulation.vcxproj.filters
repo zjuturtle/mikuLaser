@@ -39,6 +39,9 @@
     <ClInclude Include="src\Model.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\writePointCloud.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\load.cpp">
@@ -48,6 +51,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\Shader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\writePointCloud.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -70,10 +76,10 @@
     <None Include="shader\pointCloud.vertexShader">
       <Filter>源文件\shader</Filter>
     </None>
-    <None Include="shader\humanModel.fragmentShader">
+    <None Include="shader\humanModel.vertexShader">
       <Filter>源文件\shader</Filter>
     </None>
-    <None Include="shader\humanModel.vertexShader">
+    <None Include="shader\humanModel.fragmentShader">
       <Filter>源文件\shader</Filter>
     </None>
   </ItemGroup>
