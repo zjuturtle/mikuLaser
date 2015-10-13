@@ -157,11 +157,13 @@
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\PointCloud.h" />
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\writePointCloud.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\load.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\writePointCloud.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shader\environment.fragmentShader" />

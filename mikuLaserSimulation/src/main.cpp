@@ -140,7 +140,7 @@ int main()
 	int scanNum = 13;
 	for (int i = 0; i < scanNum;i++ ) {
 		GLfloat angle = (GLfloat)i / (GLfloat)scanNum*abs(endAngle-startAngle)+startAngle;
-		testLaser.addLaser(glm::vec3(-10.f, 0.f, 1.f), 360, 180.f, 0.f, angle, 0.f);
+		testLaser.addLaser(glm::vec3(-1.f, 0.f, 1.f), 360, 180.f, 0.f, angle, 0.f);
 	}
 
 	fill_barrier_tank(humanModel.meshes, humanModelMatrix);
